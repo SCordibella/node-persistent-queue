@@ -222,9 +222,12 @@ PersistentQueue.prototype.open = function open() {
 		// Opening db
 		self.db = new sqlite3.Database(self.dbPath,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,function(err) {
 			if(err !== null)
-				reject(err) ;
+			{
+				reject(err);
+			}
 			resolve() ;
 		}) ;
+		self.db.configure("busyTimeout", 15000);
 	})
 	.then(function() {
 		// Create and initialise tables if they doesnt exist
@@ -348,14 +351,18 @@ PersistentQueue.prototype.done = function() {
 PersistentQueue.prototype.add = function(job) {
 	var self = this ;
 
-	self.db.run("INSERT INTO " + table + " (job) VALUES (?)", JSON.stringify(job), function(err) {
+	self.db.run("INSERT INTO " + table + " (job) VALUES (?)", JSON.stringify(job), function(err) 
+	{
 		if(err)
-			throw err ;
-
-		// Increment our job length
-		self.length++ ;
-
-		self.emit('add',{ id:this.lastID, job: job }) ;
+		{
+			self.add(job);
+		}
+		else
+		{
+			// Increment our job length
+			self.length++ ;
+			self.emit('add',{ id:this.lastID, job: job }) ;
+		}
 	});
 	return self ;
 } ;
