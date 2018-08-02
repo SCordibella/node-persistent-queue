@@ -169,7 +169,7 @@ function PersistentQueue(filename,batchSize) {
 			})
 			.catch(function(err) {
 				console.error(err) ;
-				process.exit(1) ;
+				//process.exit(1) ;
 			}) ;
 		} else if(self.queue.length) { // If in-memory queue not empty, trigger next job
 			// https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/
@@ -338,7 +338,7 @@ PersistentQueue.prototype.done = function() {
 	})
 	.catch(function(err) {
 		console.error(err) ;
-		process.exit(1) ;
+		//process.exit(1) ;
 	}) ;
 } ;
 
@@ -484,19 +484,24 @@ function removeJob(self) {
 		if(self.db === null)
 			reject('Open queue database before starting queue') ;
 
+		if (typeof(job) === "undefined")
+			resolve();
+
 		if(self.debug) console.log('About to delete') ;
 		if(self.debug) console.log('Removing job: '+JSON.stringify(job)) ;
 		if(self.debug) console.log('From table: '+table) ;
 		if(self.debug) console.log('With id: '+job.id) ;
 		if(self.debug) console.log('With queue length: '+self.length) ;
+		
+		
 		self.db.run("DELETE FROM " + table + " WHERE id = ?", job.id, function(err) {
 			if(err !== null)
 				reject(err) ;
 
-			if(this.changes) // Number of rows affected (0 == false)
-				resolve(job.id) ;
+			//if(this.changes) // Number of rows affected (0 == false)
+			resolve(job.id) ;
 
-			reject("Job id "+job.id+" was not removed from queue") ;
+			//reject("Job id "+job.id+" was not removed from queue") ;
 		});
 	}) ;
 }
